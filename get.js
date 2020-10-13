@@ -11,7 +11,6 @@ module.exports.getBook = async event => {
     });
     
     const id = event.pathParameters.id;
-    console.log(`id a ser buscado: ${id}`);
 
     const getQuery = function() {
         return new Promise((resolve, reject) => {
