@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Books-catalog
+Parameters:
+  Stage:
+    Type: String
+    Default: 'dev'
+  FunctionName:
+    Type: String
+
+Resources:
+
+
+  listBooks:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: listBooks.handler
+      Runtime: nodejs12.x
+      Events:
+        catalogApi:
+          Type: Api
+          Properties:
+            Path: /books
+            Method: get
+  
+
+ #     Policies:
+ #       - Version: "2012-10-17"
+ #         Statement: 
+ #         - Effect: "Allow"
+ #           Action: 
+ #             - "lambda:InvokeFunction"
+ #           Resource: '*'
+ #     DeploymentPreference:
+# Specifies the deployment configuration      
+          
+# Outputs:
+ # Stage:
+ #   Description: "Stage"
+ #   Value: !Ref Stage
+ # FunctionName:
+ #   Description: "Function Name"
+ #   Value: !Ref FunctionName
