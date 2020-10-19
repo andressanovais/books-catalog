@@ -1,28 +1,89 @@
 AWSTemplateFormatVersion : '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Books-catalog
+Description: Books catalog
 Parameters:
   Stage:
     Type: String
     Default: 'dev'
   FunctionName:
     Type: String
+    Default: !Sub '${Stage}-BooksCatalog'
 
 Resources:
 
-
-  listBooks:
+  GetTotal:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: listBooks.handler
+      FunctionName: !Sub '${Stage}-Lambda-GetTotal'
+      Role: 'arn:aws:iam::589322762862:role/Permissions-BooksCatalog'
+      CodeUri: ./../  
+      Handler: ./requests/GetTotal.handler
       Runtime: nodejs12.x
       Events:
-        catalogApi:
+        CatalogApi:
           Type: Api
           Properties:
             Path: /books
             Method: get
+
+  GetSpecificBook:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${Stage}-Lambda-GetSpecificBook'
+      Role: 'arn:aws:iam::589322762862:role/Permissions-BooksCatalog'
+      Handler: ./requests/GetSpecificBook.handler
+      CodeUri: ./../ 
+      Runtime: nodejs12.x
+      Events:
+        CatalogApi:
+          Type: Api
+          Properties:
+            Path: /books/{id}
+            Method: get
+
+  ReceiveBookQueue:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${Stage}-Lambda-ReceiveBookQueue'
+      Role: 'arn:aws:iam::589322762862:role/Permissions-BooksCatalog'
+      CodeUri: ./../ 
+      Handler: ./requests/ReceiveBookQueue.handler
+      Runtime: nodejs12.x
+      Enviroment:
+        Variables:
+        STAGE: !Sub '${Stage}'
+      Events:
+        SQSEvent:
+          Type: SQS
+          Queue: 'arn:aws:sqs:us-east-1:589322762862:books-to-register'
+            BatchSize: 1
+        CatalogApi:
+          Type: Api
+          Properties:
+            Path: /books/{id}
+            Method: post
+        
+  SendBookQueue:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${Stage}-Lambda-SendBookQueue'
+      Role: 'arn:aws:iam::589322762862:role/Permissions-BooksCatalog'
+      CodeUri: ./../ 
+      Handler: ./requests/SendBookQueue.handler
+      Runtime: nodejs12.x
+      Events:
+        SQSEvent:
+          Type: SQS
+          Queue: 'arn:aws:sqs:us-east-1:589322762862:books-to-register'
+          BatchSize: 1
   
+Outputs:
+  Stage:
+    Description: "Stage"
+    Value: !Ref Stage
+  FunctionName:
+    Description: "Function Name"
+    Value: !Ref FunctionName
 
  #     Policies:
  #       - Version: "2012-10-17"
@@ -33,11 +94,3 @@ Resources:
  #           Resource: '*'
  #     DeploymentPreference:
 # Specifies the deployment configuration      
-          
-# Outputs:
- # Stage:
- #   Description: "Stage"
- #   Value: !Ref Stage
- # FunctionName:
- #   Description: "Function Name"
- #   Value: !Ref FunctionName
